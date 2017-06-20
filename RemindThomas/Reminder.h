@@ -34,7 +34,7 @@
 @property CLRegion* region;
 
 - (int)numberOfTodos;
-
+- (BOOL)containsLocation:(CLLocation*)location;
 
 @end
 

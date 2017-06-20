@@ -24,6 +24,12 @@
     return self;
 }
 
+#pragma mark - Region Management
+- (BOOL)containsLocation:(CLLocation*)location {
+    CLCircularRegion* region = (CLCircularRegion*)self.region;
+    return [region containsCoordinate:location.coordinate];
+}
+
 #pragma mark - NSCoding
 
 - (instancetype)initWithCoder:(NSCoder *)aDecoder {

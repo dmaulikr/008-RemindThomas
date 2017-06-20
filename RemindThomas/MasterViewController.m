@@ -90,7 +90,7 @@
          show an alert box and then dismiss it */
         [self.locationManager requestLocation];
         [self showDelayMsg];
-        [self performSelector:@selector(insertNewReminder) withObject:self afterDelay:3];
+        [self performSelector:@selector(openReminder) withObject:self afterDelay:3];
     } else {
         /* TODO: show user error message */
     }
@@ -104,26 +104,45 @@
     [self dismissViewControllerAnimated:YES completion:nil];
 }
 
-- (void)insertNewReminder {
+- (void)openReminder {
     [self dismissDelayMsg];
-    [self insertNewReminderWithLocation:self.latestLocation];
-}
-
-- (void)insertNewReminderWithLocation:(CLLocation*)location {
-    if (!self.objects) {
-        self.objects = [[NSMutableArray alloc] init];
-    }
-    [self addNewReminderWithLocation:location];
-    NSIndexPath *indexPath = [NSIndexPath indexPathForRow:0 inSection:0];
-    [self.tableView insertRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationAutomatic];
+    Reminder *reminder = [self reminderForLocation:self.latestLocation];
+    NSUInteger index = [self.objects indexOfObject:reminder];
+    NSIndexPath *indexPath = [NSIndexPath indexPathForItem:index inSection:0];
+    [self.tableView selectRowAtIndexPath:indexPath animated:YES scrollPosition:UITableViewScrollPositionTop];
+    [self performSegueWithIdentifier:@"showDetail" sender:self];
 }
 
 # pragma mark - Reminder Management
 
-- (void)addNewReminderWithLocation:(CLLocation*)location {
+- (Reminder*)reminderForLocation:(CLLocation*)location {
+    if (!self.objects) {
+        self.objects = [[NSMutableArray alloc] init];
+    }
+    Reminder *reminder = [self findReminderFor:location];
+    if (!reminder) reminder = [self insertNewReminderWithLocation:location];
+    return reminder;
+}
+
+- (Reminder*)findReminderFor:(CLLocation*)location {
+    for(Reminder *reminder in self.objects) {
+        if([reminder containsLocation:location]) return reminder;
+    }
+    return nil;
+}
+
+- (Reminder*)insertNewReminderWithLocation:(CLLocation*)location {
+    Reminder *reminder = [self addNewReminderWithLocation:location];
+    NSIndexPath *indexPath = [NSIndexPath indexPathForRow:0 inSection:0];
+    [self.tableView insertRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationAutomatic];
+    return reminder;
+}
+
+- (Reminder*)addNewReminderWithLocation:(CLLocation*)location {
     long id = [Reminder maxId:self.objects]+1;
     Reminder *reminder = [[Reminder alloc] initWithLocation:location andId:id];
     [self.objects insertObject:reminder atIndex:0];
+    return reminder;
 }
 
 
