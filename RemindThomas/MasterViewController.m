@@ -121,7 +121,8 @@
 # pragma mark - Reminder Management
 
 - (void)addNewReminderWithLocation:(CLLocation*)location {
-    Reminder *reminder = [[Reminder alloc] initWithLocation:location andId:self.objects.count];
+    long id = [Reminder maxId:self.objects]+1;
+    Reminder *reminder = [[Reminder alloc] initWithLocation:location andId:id];
     [self.objects insertObject:reminder atIndex:0];
 }
 

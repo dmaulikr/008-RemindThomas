@@ -15,10 +15,11 @@
 - (id)initWithLocation:(CLLocation*)location andId:(long)id {
     if ((self = [super init])) {
         [self setAddressFrom:location];
+        _unique_id = [NSNumber numberWithLong:id];
         NSString *identifier = [NSString stringWithFormat:@"region-%ld", id];
-        self.region = [[CLCircularRegion alloc] initWithCenter:location.coordinate radius:5.0 identifier:identifier];
-        self.region.notifyOnEntry = YES;
-        self.region.notifyOnExit = YES;
+        _region = [[CLCircularRegion alloc] initWithCenter:location.coordinate radius:5.0 identifier:identifier];
+        _region.notifyOnEntry = YES;
+        _region.notifyOnExit = YES;
     }
     return self;
 }
@@ -27,15 +28,17 @@
 
 - (instancetype)initWithCoder:(NSCoder *)aDecoder {
     if ((self = [super init])) {
-        self.name = [aDecoder decodeObjectForKey:@"name"];
-        self.address = [aDecoder decodeObjectForKey:@"address"];
-        self.todos = [aDecoder decodeObjectForKey:@"todos"];
-        self.region = [aDecoder decodeObjectForKey:@"region"];
+        _unique_id = [aDecoder decodeObjectForKey:@"unique_id"];
+        _name = [aDecoder decodeObjectForKey:@"name"];
+        _address = [aDecoder decodeObjectForKey:@"address"];
+        _todos = [aDecoder decodeObjectForKey:@"todos"];
+        _region = [aDecoder decodeObjectForKey:@"region"];
     }
     return self;
 }
 
 - (void)encodeWithCoder:(NSCoder *)aCoder {
+    [aCoder encodeObject:self.unique_id forKey:@"unique_id"];
     [aCoder encodeObject:self.name forKey:@"name"];
     [aCoder encodeObject:self.address forKey:@"address"];
     [aCoder encodeObject:self.todos forKey:@"todos"];
@@ -43,6 +46,17 @@
 }
 
 #pragma mark - Helper functions
+
++ (long)maxId:(NSArray*)reminders {
+    NSNumber *max;
+    for(Reminder *reminder in reminders) {
+        if(!max || (max.longValue < reminder.unique_id.longValue)) {
+            max = reminder.unique_id;
+        }
+    }
+    if (!max) return 0;
+    else return max.longValue;
+}
 
 /**
  [=] Return the number of TODOS
